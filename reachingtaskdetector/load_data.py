@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 
 def create_np_arr(data_path):
-  """Create a dictionary of NumPy arrays with labels corresponding to each object marker.
+  """Create a dictionary of NumPy arrays with labels corresponding to each
+     object marker.
      The arrays contain three columns:
        column 1: x_coord
        column 2: y_coord
@@ -44,25 +45,8 @@ def get_labels(data_frame):
 def read_in_file(data_path):
   return pd.read_csv(data_path)
 
-def apply_lh_filter(numpy_arr, threshold=.5):
-  """Apply a filter that nullifies points below some likelihood threshold.
-     Input array must  contain the following columns:
-       column 1: x_coord
-       column 2: y_coord
-       column 3: likelihood - lh
-
-  Args:
-    numpy_arr: A NumPy array containing the 3 columns
-    threshold: likelihood threshold bolew which points are nullified;
-    default=50
-  """
+def apply_prob_filter(numpy_arr, threshold=.5):
   for i in range(numpy_arr.shape[0]):
-    if (numpy_arr[i, 2] < threshold):
-      numpy_arr[i, 1] = 0
-      numpy_arr[i, 0] = 0
-
-
-if __name__ == '__main__':
-  object_arrs = create_np_arr('/Users/ib-nosirov/REU_2021/dlc_projects/pre_post_op-ib-2021-07-04/videos/1 preopDLC_resnet_50_pre_post_opJul4shuffle1_550000.csv')
-  apply_lh_filter(object_arrs["left_paw"])
-  print(object_arrs["left_paw"])
+    if(numpy_arr[i, 2] < threshold):
+      numpy_arr[i, 1] = np.nan 
+      numpy_arr[i, 0] = np.nan
