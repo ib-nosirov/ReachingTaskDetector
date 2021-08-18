@@ -1,102 +1,48 @@
 import numpy as np
 
-def position_reach(np_arr):
+def get_reaches(np_arr, np_pellet):
   is_reaching = False
   temp = 0
+  reach_list = []
   for i in range(np_arr.shape[0]-1):
-    if(np_arr[i] < 755 and not is_reaching):
+    if(np_arr[i] < 765 and not is_reaching and not np.isnan(np_pellet[i])):
       temp = i
       is_reaching = True
-      print('start' + str(convert_to_time(i)))
-        
-    if(is_reaching and (i - temp)>30):
-      print('end' + str(convert_to_time(i)))
-      is_reaching = False
-   
-  print(reach_count)
+      reach_list.append((i, i))
 
-#def classify_attempt(np_arr):
-  
-
-def position_reach_with_pellet(np_arr):
-  is_reaching = False
-  reach_count = 0
-  temp = 0
-  for i in range(np_arr.shape[0]-1):
-    if(np_arr[i,0] < 755 and not is_reaching and not np.isnan(np_arr[i,1])):
-      temp = i
-      is_reaching = True
-      print('start' + str(convert_to_time(i)))
-      reach_count = reach_count + 1
-        
-    if(is_reaching and (i - temp)>30):
-      print('end' + str(convert_to_time(i)))
-      is_reaching = False
-   
-  print(reach_count)
-
-def sliding_window(np_arr):
-  np_sums = np.empty(np_arr.shape[0] - 30, dtype=np.float32)
-  np_sums[:] = np.NaN
-  for i in range(np_arr.shape[0] - 30):
-    if(np_arr[i] < 810 and np_arr[i] > 740):
-      sum = 0
-      for j in range(30):
-        sum = sum + np_arr[i+j]
-      if(not np.isnan(sum)):
-        np_sums[i] = sum
-  return np_sums
-
-def velocity_reach(np_arr):
-  is_reaching = False
-  reach_count = 0
-  for i in range(np_arr.shape[0] - 1):
-    if(np_arr[i] < 810 and np_arr[i] > 740):
-      temp = i+1
-      velocity = (np_arr[i] - np_arr[temp])/(i - temp)
-      if(velocity < -10 and not is_reaching):
-        is_reaching = True
-        reach_count = reach_count + 1
-        #print('reach ' + str(convert_to_time(i)))
-      else:
+    if(is_reaching):
+      if((i - temp)>30 or np_arr[i] > 765):
         is_reaching = False
+        reach_list[-1] = (temp, i)
+  return reach_list
 
-  print(reach_count)
+def is_successful(np_snout_paw, end):
+  truth_value = False
+  count = 0
+  for i in range(90):
+    np_velocity = np_snout_paw[end+i+1] - np_snout_paw[end+i]
+    if(np_velocity < 1 and np_velocity > -1):
+      count = count + 1
+  if(count > 30):
+    truth_value = True
+  return truth_value
 
-def create_timestamps(data_frame):
-  timestamps_list = []
-  attempt_ongoing = False
-  for i in range(data_frame.shape[0]):
-    if(data_frame[i,2] > 0.8):
-      if(not attempt_ongoing):
-        attempt_ongoing = True
-        time = convert_to_time(i/59)
-        timestamps_list.append(time)
+def check_attempt(reach_list):
+  attempts_list = [(reach_list[0][0], reach_list[0][1], 1)]
+  for i in range(len(reach_list)-1):
+    if(reach_list[i+1][0]-reach_list[i][1] < 60):
+      if(reach_list[i+1][0]-attempts_list[-1][1] < 60):
+        attempts_list[-1] = (attempts_list[-1][0], reach_list[i+1][1],
+                             attempts_list[-1][2]+1)
       else:
-        if(attempt_ongoing):
-          time = convert_to_time(i/59)
-          timestamps_list.append(time)
-          attempt_ongoing = False
-  return timestamps_list
-  
-def output_timestamps(timestamps_list):
-  i = 0
-  for time in timestamps_list:
-    if (i%2 == 0):
-      print("Start Attempt: ", str(time[0]) + ":" + str(time[1]))
+        attempts_list.append((reach_list[i][0], reach_list[i+1][1], 2))
     else:
-      print("End Attempt: ", str(time[0]) + ":" + str(time[1]))
-    i = i+1
+      attempts_list.append((reach_list[i+1][0], reach_list[i+1][1], 1))
+
+  return attempts_list
 
 def convert_to_time(frame):
-  time = float(frame / 59)
-  seconds = float(time % 60)
-  minutes = int(time / 60)
-  return (minutes,seconds)
-
-def convert_windows_to_time(frame):
-  frame = frame + 20
-  time = float(frame / 59)
+  time = float(frame / 60)
   seconds = float(time % 60)
   minutes = int(time / 60)
   return (minutes,seconds)

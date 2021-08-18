@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-
 def create_np_arr(data_path):
   """Create a dictionary of NumPy arrays with labels corresponding to each
      object marker.

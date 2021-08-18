@@ -14,7 +14,7 @@
 # ---
 
 # %%
-import numpy as np
+import numpy as np 
 import pandas as pd
 import matplotlib.pyplot as plt
 # %matplotlib inline
@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 def read_in_file(data_path):
     return pd.read_csv(data_path)
 
-data_path = '/Users/ib-nosirov/REU_2021/ReachingTaskDetector/tests/data/1 preopDLC_resnet_50_pre_post_opJul4shuffle1_550000.csv'
+data_path = '../tests/data/IMG_42860.csv'
 df = read_in_file(data_path)
 df
 
@@ -35,7 +35,7 @@ df
 [i for i in df.iloc[0, 1::3]]
 
 # %%
-df_pellet = df.iloc[2:, 10:13]
+df_pellet = df.iloc[2:, :3]
 df_pellet = df_pellet.reset_index(drop=True)
 
 # %%
@@ -54,10 +54,13 @@ for i in range(df_pellet.shape[0]):
         df_pellet[i, 0] = 0
 
 # %%
+df_pellet
+
+# %%
 import numpy as np 
 from matplotlib import pyplot as plt 
 
-t = np.arange(5805)
+t = np.arange(df_pellet.shape[0])
 y = df_pellet[:,1]
 prob = df_pellet[:,2]
 plt.title("y-position vs time") 
@@ -67,7 +70,7 @@ plt.scatter(t,y, c=prob)
 plt.show()
 
 # %%
-t = np.arange(5805)
+t = np.arange(df_pellet.shape[0])
 x = df_pellet[:,0]
 prob = df_pellet[:,2]
 plt.title("x-position vs time") 
@@ -105,3 +108,4 @@ def output_time_stamps(data_frame):
 output_time_stamps(df_pellet)
 
 # %%
+# %jt -l

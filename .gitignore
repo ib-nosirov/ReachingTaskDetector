@@ -1,3 +1,4 @@
 virt-env
 __pycache__
 tests/data
+.ipynb_checkpoints
